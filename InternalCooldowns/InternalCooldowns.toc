@@ -1,0 +1,13 @@
+## Interface: 30300
+## Title: InternalCooldowns |cffff00001.2|r
+## Title-ruRU: ВнутренниеКулдауны |cffff00001.2|r
+## Notes: Adds Cooldown timers to your trinket/enchants/metas procs
+## Notes-ruRU: Добавляет таймеры перезарядки к вашим аксесуаоам/чарам/особым камням.
+## Author: DarhangeR (original Ardentvark)
+## Version: |cffff00001.2|r
+## OptionalDeps: Ace3, LibInternalCooldowns-1.0, LibSink-2.0, Bartender4, Forte_Cooldown
+## SavedVars: InternalCooldownsDB
+
+embeds.xml
+Core.lua
+modules.xml
