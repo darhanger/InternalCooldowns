@@ -1,4 +1,4 @@
-local lib, oldminor = LibStub:GetLibrary("LibInternalCooldowns-1.0");
+local lib, oldminor = LibStub:GetLibrary("LibInternalCooldowns-1.1");
 
 -- Format is spellID = itemID | {itemID, itemID, ... itemID}
 local spellToItem = {
@@ -54,8 +54,10 @@ local spellToItem = {
 	[71601] = 50353,			-- Dislodged Foreign Object
 	[71584] = 50358,			-- Purified Lunar Dust
 	[71401] = 50342,			-- Whispering Fanged Skull
+	[71605] = 50360,			-- Phylactery of the Nameless Lich
 	
 	-- Heroic ICC trinkets
+	[71636] = 50365,			-- Phylactery of the Nameless Lich
 	[71541] = 50343,			-- Whispering Fanged Skull
 	[71641] = 50366,			-- Althor's Abacus
 	[71639] = 50349,			-- Corpse-tongue coin
@@ -69,6 +71,7 @@ local spellToItem = {
 	[64868] = {46134, 46133, 46132, 46130, 46129, 46131, 45369, 45368, 45367, 45365},
 	
 	-- WotLK Epix
+	[64739] = 45535, 			-- Show of Faith
 	[67671] = 47214,			-- Banner of Victory
 	[67669] = 47213, 			-- Abyssal Rune 
 	[64772] = 45609, 			-- Comet's Trail
@@ -114,11 +117,33 @@ local spellToItem = {
 	[60229] = {44253, 44254, 44255, 42987},		-- Greatness, INT
 	[60234] = {44253, 44254, 44255, 42987},		-- Greatness, STR
 	
-	-- Burning Crusade trinkets
-	-- None yet.
-	
-	-- Vanilla Epix
+	-- TBC Rings
+	[35087] = 29309,			-- Band of the Eternal Restorer
+	[35084] = 29305,			-- Band of the Eternal Sage
+	[35081] = 29301,			-- Band of the Eternal Champion
+	[35078] = 29297,			-- Band of the Eternal Defender
+	-- TBC Trinkets
+	[45040] = 34427,			-- Memento of Tyrande
+	[37656] = 32496,			-- Memento of Tyrande
+	[37198] = 30447,			-- Tome of Fiery Redemption
+	[37174] = 30450,			-- Warp-Spring Coil
+	[38324] = 30619,			-- Fel Reaver's Piston
+	[38348] = 30626,			-- Sextant of Unstable Currents
+	[42084] = 30627,			-- Tsunami Talisman
+	[37243] = 30663,			-- Fathom-Brooch of the Tidewalker
+	[34775] = 28830,			-- Dragonspine Trophy
+	[45055] = 34470,			-- Timbal's Focusing Crystal
+	[45053] = 34472,			-- Shard of Contempt
+	[33370] = {28190, 27683},	-- Scarab of the Infinite Cycle / Quagmirran's Eye
+	[34321] = 28418,			-- Shiffar's Nexus-Horn
+	[33649] = 28034,			-- Hourglass of the Unraveller
+	[41263] = 32771,			-- Airman's Ribbon of Gallantry
+	[41261] = 32770,			-- Skyguard Silver Cross
+	[37658] = 28785,			-- Lightning Capacito
+	[33523] = {27922, 27924, 27926, 27927}, -- PvP Low
+	-- Vanilla Epix/Rares
 	[23684] = 19288,			-- Darkmoon Card: Blue Dragon
+	[22600] = 18168,			-- Force Reactive Disk
 };
 
 -- spell ID = {enchant ID, slot1[, slot2]}
@@ -126,10 +151,9 @@ local enchants = {
 	[55637] = {3722, 15},			-- Lightweave
 	[55775] = {3730, 15},			-- Swordguard
 	[55767] = {3728, 15},			-- Darkglow
-	[59626] = {3790, 16}, 			-- Black Magic ?
-	[59625] = {3790, 16}, 			-- Black Magic ? 	
+	[59626] = {3790, 16, 17}, 			-- Black Magic ?
+	[59625] = {3790, 16, 17}, 			-- Black Magic ? 	
 };
-
 
 -- ICDs on metas assumed to be 45 sec. Needs testing.
 local metas = {	
@@ -150,7 +174,7 @@ local cooldowns = {
 	[75473] = 45,
 	[75466] = 45,
 	[75480] = 45,
-	[75477] = 45,	
+	[75477] = 45,
 	-- ICC rep rings
 	[72416] = 60,
 	[72412] = 60,
@@ -178,6 +202,10 @@ local cooldowns = {
 	[64861] = 45, 		-- Hunter T8 4pc
 	[64868] = 45, 		-- Mage T8 2pc
 	
+	-- Phylactery of the Nameless Lich
+	[71636] = 100,
+	[71605] = 100,
+	
 	-- Deathbringer's Will
 	[71485] = 105,
 	[71492] = 105,
@@ -196,7 +224,28 @@ local cooldowns = {
 	
 	-- Black Magic
 	[59626] = 35,
-	[59625] = 35, 	
+	[59625] = 35, 
+	
+	-- TBC Rings
+	[35087] = 60,
+	[35084] = 60,
+	[35081] = 60,
+	[35078] = 60,	
+	
+	-- TBC Trink
+	[37656] = 50,
+	[37174] = 30,
+	[38324] = 15,
+	[37243] = 40,
+	[34775] = 20,
+	[37658] = 2.5,
+	[45055] = 15,
+	[33649] = 50,
+	[41263] = 10,
+	[41261] = 10,
+	[33523] = 25,
+	-- Vanilla Epix/Rares
+	[22600] = 1,
 };
 
 

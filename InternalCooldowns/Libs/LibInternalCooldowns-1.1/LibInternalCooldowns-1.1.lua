@@ -1,28 +1,39 @@
-local MAJOR = "LibInternalCooldowns-1.0"
-local MINOR = tonumber(("$Revision: 15 $"):match("%d+"))
+local MAJOR = "LibInternalCooldowns-1.1";
+local MINOR = tonumber(("$Revision: 16 $"):match("%d+"));
 
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end -- No Upgrade needed.
 
-local CallbackHandler = LibStub:GetLibrary("CallbackHandler-1.0")
+-- On Warmane UnitGUID("player" can be nil;
+local old_UnitGUID = UnitGUID
+function UnitGUID(unit)
+	local guid = old_UnitGUID(unit)
+	if not guid and (unit == "player" or unit == "0x0") then
+		return "0x0";
+	end
+	return guid;
+end;
 
-local GetInventoryItemLink = _G.GetInventoryItemLink
-local GetInventoryItemTexture = _G.GetInventoryItemTexture
-local GetMacroInfo = _G.GetMacroInfo
-local GetActionInfo = _G.GetActionInfo
-local substr = _G.string.sub
-local wipe = _G.wipe
-local playerGUID = UnitGUID("player")
-local GetTime = _G.GetTime
+local CallbackHandler = LibStub:GetLibrary("CallbackHandler-1.0");
 
-lib.spellToItem = lib.spellToItem or {}
-lib.cooldownStartTimes = lib.cooldownStartTimes or {}
-lib.cooldownDurations = lib.cooldownDurations or {}
-lib.callbacks = lib.callbacks or CallbackHandler:New(lib)
-lib.cooldowns = lib.cooldowns or nil
-lib.hooks = lib.hooks or {}
+local GetInventoryItemLink = _G.GetInventoryItemLink;
+local GetItemInfo = _G.GetItemInfo;
+local GetInventoryItemTexture = _G.GetInventoryItemTexture;
+local GetMacroInfo = _G.GetMacroInfo;
+local GetActionInfo = _G.GetActionInfo;
+local substr = _G.string.sub;
+local wipe = _G.wipe;
+local playerGUID = UnitGUID("player");
+local GetTime = _G.GetTime;
 
-local enchantProcTimes = {}
+lib.spellToItem = lib.spellToItem or {};
+lib.cooldownStartTimes = lib.cooldownStartTimes or {};
+lib.cooldownDurations = lib.cooldownDurations or {};
+lib.callbacks = lib.callbacks or CallbackHandler:New(lib);
+lib.cooldowns = lib.cooldowns or nil;
+lib.hooks = lib.hooks or {};
+
+local enchantProcTimes = {};
 
 if not lib.eventFrame then
 	lib.eventFrame = CreateFrame("Frame")
@@ -31,7 +42,7 @@ if not lib.eventFrame then
 	lib.eventFrame:SetScript("OnEvent", function(frame, event, ...)
 		frame.lib[event](frame.lib, event, ...)
 	end)
-end
+end;
 lib.eventFrame.lib = lib
 
 local INVALID_EVENTS = {
@@ -43,7 +54,7 @@ local INVALID_EVENTS = {
 	SPELL_AURA_BROKEN 		= true,
 	SPELL_AURA_BROKEN_SPELL = true,
 	SPELL_CAST_FAILED 		= true
-}
+};
 
 local slots = {
 	AMMOSLOT = 0,
@@ -67,14 +78,14 @@ local slots = {
 	INVTYPE_SHIELD = 17,
 	INVTYPE_WEAPONOFFHAND = 17,
 	INVTYPE_RANGED = 18
-}
+};
 
 function lib:PLAYER_ENTERING_WORLD()
 	playerGUID = UnitGUID("player")	
 	self:Hook("GetInventoryItemCooldown")
 	self:Hook("GetActionCooldown")
 	self:Hook("GetItemCooldown")
-end
+end;
 
 function lib:Hook(name)
 	-- unhook if a hook existed from an older copy
@@ -87,18 +98,23 @@ function lib:Hook(name)
 	_G[name] = function(...)
 		return self[name](self, ...)
 	end
-end
+end;
 
 local function checkSlotForEnchantID(slot, enchantID)
 	local link = GetInventoryItemLink("player", slot)
 	if not link then return false; end
 	local itemID, enchant = link:match("item:(%d+):(%d+)")
 	if tonumber(enchant or -1) == enchantID then
-		return true, tonumber(itemID)
+		return true, tonumber(itemID);
 	else
-		return false
+		return false;
 	end
-end
+end;
+
+local function checkInvType(id)
+	local _, _, _, _, _, _, _, _, invType = GetItemInfo(id)
+	return invType;
+end;
 
 local function isEquipped(itemID)
 	local _, _, _, _, _, _, _, _, equipLoc = GetItemInfo(itemID)
@@ -108,94 +124,99 @@ local function isEquipped(itemID)
 		for _, v in ipairs(slot) do
 			local link = GetInventoryItemLink("player", v)
 			if link and link:match(("item:%s"):format(itemID)) then
-				return true
+				return true;
 			end
 		end
 	else
 		local link = GetInventoryItemLink("player", slot)
 		if link and link:match(("item:%s"):format(itemID)) then
-			return true
+			return true;
 		end
 	end
-	return false
-end
+	return false;
+end;
 
 function lib:COMBAT_LOG_EVENT_UNFILTERED(frame, timestamp, event, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags, spellID, spellName)
-	playerGUID = playerGUID or UnitGUID("player")
-	if ((destGUID == playerGUID and (sourceGUID == nil or sourceGUID == destGUID)) or sourceGUID == playerGUID) and not INVALID_EVENTS[event] and substr(event, 0, 6) == "SPELL_" then
+	playerGUID = playerGUID or UnitGUID("player");
+	if ((destGUID == playerGUID and (sourceGUID == nil or sourceGUID == destGUID)) 
+	or sourceGUID == playerGUID) and not INVALID_EVENTS[event] and substr(event, 0, 6) == "SPELL_" then
 		local itemID = lib.spellToItem[spellID]
 		if itemID then
-			if type(itemID) == "table" then
+			if type(itemID) == "table" then			
 				for k, v in ipairs(itemID) do
-					if isEquipped(v) then
-						self:SetCooldownFor(v, spellID, "ITEM")
+					if isEquipped(v) 
+					and (checkInvType(v) ~= "INVTYPE_HEAD"
+					and checkInvType(v) ~= "INVTYPE_HAND") then
+						self:SetCooldownFor(v, spellID, "ITEM");
 					end
 				end
-				return
+				return;
 			else
 				if isEquipped(itemID) then
-					self:SetCooldownFor(itemID, spellID, "ITEM")
+					self:SetCooldownFor(itemID, spellID, "ITEM");
 				end
-				return
+				return;
 			end
 		end
 		
 		-- Tests for enchant procs 
 		local enchantID = lib.enchants[spellID]
 		if enchantID then
-			local enchantID, slot1, slot2 = unpack(enchantID)
-			local enchantPresent, itemID, first, second
+			local enchantID, slot1, slot2 = unpack(enchantID);
+			local enchantPresent, itemID, first, second;
 			enchantPresent, itemID = checkSlotForEnchantID(slot1, enchantID)
 			if enchantPresent then
 				first = itemID
 				if (enchantProcTimes[slot1] or 0) < GetTime() - (lib.cooldowns[spellID] or 45) then
-					enchantProcTimes[slot1] = GetTime()
-					self:SetCooldownFor(itemID, spellID, "ENCHANT")
-					return
+					enchantProcTimes[slot1] = GetTime();
+					self:SetCooldownFor(itemID, spellID, "ENCHANT");
+					return;
 				end
 			end
 
-			enchantPresent, itemID = checkSlotForEnchantID(slot2, enchantID)
+			enchantPresent, itemID = checkSlotForEnchantID(slot2, enchantID);
 			if enchantPresent then
 				second = itemID
 				if (enchantProcTimes[slot2] or 0) < GetTime() - (lib.cooldowns[spellID] or 45) then
 					enchantProcTimes[slot2] = GetTime()
-					self:SetCooldownFor(itemID, spellID, "ENCHANT")
-					return
+					self:SetCooldownFor(itemID, spellID, "ENCHANT");
+					return;
 				end
 			end
 			
 			if first and second then
 				if enchantProcTimes[slot1] < enchantProcTimes[slot2] then
-					self:SetCooldownFor(first, spellID, "ENCHANT")
+					self:SetCooldownFor(first, spellID, "ENCHANT");
 				else
-					self:SetCooldownFor(second, spellID, "ENCHANT")
+					self:SetCooldownFor(second, spellID, "ENCHANT");
 				end
 			end
 		end
 		
-		local metaID = lib.metas[spellID]
+		local metaID = lib.metas[spellID];
 		if metaID then
-			local link = GetInventoryItemLink("player", 1)
+			local link = GetInventoryItemLink("player", 1);
 			if link then
-				local id = tonumber(link:match("item:(%d+)") or 0)
-				if id and id ~= 0 then
-					self:SetCooldownFor(id, spellID, "META")
+				local id = tonumber(link:match("item:(%d+)") or 0);
+				local haveSpell = GetItemSpell(id);
+				if id and id ~= 0 
+				and haveSpell == nil then
+					self:SetCooldownFor(id, spellID, "META");
 				end
 			end
-			return
+			return;
 		end
 		
-		local talentID = lib.talents[spellID]
+		local talentID = lib.talents[spellID];
 		if talentID then
-			self:SetCooldownFor(("%s: %s"):format(UnitClass("player"), talentID), spellID, "TALENT")
-			return
+			self:SetCooldownFor(("%s: %s"):format(UnitClass("player"), talentID), spellID, "TALENT");
+			return;
 		end
 	end
-end
+end;
 
 function lib:SetCooldownFor(itemID, spellID, procSource)
-	local duration = lib.cooldowns[spellID] or 45
+	local duration = lib.cooldowns[spellID] or 45;
 	lib.cooldownStartTimes[itemID] = GetTime()
 	lib.cooldownDurations[itemID] = duration
 	
@@ -205,7 +226,7 @@ function lib:SetCooldownFor(itemID, spellID, procSource)
 	else
 		lib.callbacks:Fire("InternalCooldowns_Proc", itemID, spellID, GetTime(), duration, procSource)
 	end
-end
+end;
 
 local function cooldownReturn(id)
 	if not id then return end
@@ -214,16 +235,16 @@ local function cooldownReturn(id)
 		if lib.cooldownStartTimes[id] + lib.cooldownDurations[id] > GetTime() then
 			return lib.cooldownStartTimes[id], lib.cooldownDurations[id], 1
 		else
-			return 0, 0, 0
+			return 0, 0, 0;
 		end
 	else
-		return nil
+		return nil;
 	end
-end
+end;
 
 function lib:IsInternalItemCooldown(itemID)
-	return cooldownReturn(itemID) ~= nil
-end
+	return cooldownReturn(itemID) ~= nil;
+end;
 
 function lib:GetInventoryItemCooldown(unit, slot)
 	local start, duration, enable = self.hooks.GetInventoryItemCooldown(unit, slot)
@@ -234,49 +255,57 @@ function lib:GetInventoryItemCooldown(unit, slot)
 			itemID = tonumber(itemID or 0)
 			
 			local start, duration, running = cooldownReturn(itemID)
-			if start then return start, duration, running end
+			if start then 
+				return start, duration, running 
+			end
 		end
 	end
-	return start, duration, enable
-end
+	return start, duration, enable;
+end;
 
 function lib:GetActionCooldown(slotID)
 	local t, id, subtype, globalID = GetActionInfo(slotID)
 	if t == "item" then
 		local start, duration, running = cooldownReturn(id)
-		if start then return start, duration, running end
+		if start then 
+			return start, duration, running 
+		end
 	elseif t == "macro" then
 		local _, tex = GetMacroInfo(id)
 		if tex == GetInventoryItemTexture("player", 13) then
 			id = tonumber(GetInventoryItemLink("player", 13):match("item:(%d+)"))
 			local start, duration, running = cooldownReturn(id)
-			if start then return start, duration, running end
-		elseif tex == GetInventoryItemTexture("player", 14) then
+			if start then 
+				return start, duration, running 
+			end
+	elseif tex == GetInventoryItemTexture("player", 14) then
 			id = tonumber(GetInventoryItemLink("player", 14):match("item:(%d+)"))
 			local start, duration, running = cooldownReturn(id)
-			if start then return start, duration, running end
+			if start then 
+				return start, duration, running 
+			end
 		end
 	end
-	return self.hooks.GetActionCooldown(slotID)
-end
+	return self.hooks.GetActionCooldown(slotID);
+end;
 
 function lib:GetItemCooldown(param)
 	local id
 	local iparam = tonumber(param)
-	if iparam and iparam > 0 then
-		id = param
+		if iparam and iparam > 0 then
+			id = param
 	elseif type(param) == "string" then
-		local name, link = GetItemInfo(param)
-		if link then
-			id = link:match("item:(%d+)")
+			local name, link = GetItemInfo(param)
+			if link then
+				id = link:match("item:(%d+)")
+			end
 		end
-	end
-	
-	if id then
-		id = tonumber(id)
-		local start, duration, running = cooldownReturn(id)
-		if start then return start, duration, running end
-	end
+		
+		if id then
+			id = tonumber(id)
+			local start, duration, running = cooldownReturn(id)
+			if start then return start, duration, running end
+		end
 	
 	return self.hooks.GetItemCooldown(param)
-end
+end;

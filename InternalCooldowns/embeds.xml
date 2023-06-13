@@ -14,5 +14,5 @@
 <Include file="Libs\AceConfig-3.0\AceConfig-3.0.xml"/>
 
 <Include file="Libs\LibSink-2.0\lib.xml"/>
-<Include file="Libs\LibInternalCooldowns-1.0\lib.xml"/>
+<Include file="Libs\LibInternalCooldowns-1.1\lib.xml"/>
 </Ui>

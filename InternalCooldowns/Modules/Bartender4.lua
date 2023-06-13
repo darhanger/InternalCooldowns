@@ -1,14 +1,14 @@
-local mod = LibStub("AceAddon-3.0"):GetAddon("InternalCooldowns"):NewModule("Bartender4", "AceEvent-3.0")
-local lib = LibStub("LibInternalCooldowns-1.0")
+local mod = LibStub("AceAddon-3.0"):GetAddon("InternalCooldowns"):NewModule("Bartender4", "AceEvent-3.0");
+local lib = LibStub("LibInternalCooldowns-1.1");
 if not _G.Bartender4 then return end
 
 function mod:OnEnable()
 	lib.RegisterCallback(self, "InternalCooldowns_Proc")
-end
+end;
 
 function mod:OnDisable()
 	lib.UnregisterCallback(self, "InternalCooldowns_Proc")
-end
+end;
 
 function mod:InternalCooldowns_Proc()
 	for i = 1, 120 do
@@ -17,4 +17,4 @@ function mod:InternalCooldowns_Proc()
 			ActionButton_UpdateCooldown(f)
 		end
 	end	
-end
+end;
