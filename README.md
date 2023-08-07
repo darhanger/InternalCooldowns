@@ -1,11 +1,11 @@
 <!-- markdownlint-disable MD004 MD033 -->
 <div align="center">
 
-# InternalCooldowns v1.3 (3.3.5a Support)
+# InternalCooldowns v1.31 (3.3.5a Support)
 
 ![Lua](https://img.shields.io/badge/Lua-2C2D72?style=flat-squaree&logo=lua&logoColor=white)
 [![License](https://img.shields.io/github/license/darhanger/InternalCooldowns?style=flat-square)](https://github.com/darhanger/InternalCooldowns/blob/master/LICENSE) 
-[![Last Release](https://img.shields.io/github/v/release/darhanger/InternalCooldowns?style=flat-square)](https://github.com/darhanger/InternalCooldowns/releases/tag/1.3)
+[![Last Release](https://img.shields.io/github/v/release/darhanger/InternalCooldowns?style=flat-square)](https://github.com/darhanger/InternalCooldowns/releases/tag/1.31)
 [![GitHub All Releases](https://img.shields.io/github/downloads/darhanger/InternalCooldowns/total?style=flat-square)](https://github.com/darhanger/InternalCooldowns/releases)
 [![Discord Server](https://img.shields.io/badge/Discord-7289DA?style=flat-squaree&logo=discord&logoColor=white)](https://discord.gg/xBFKJc6QRr)
 [![PayPal](https://img.shields.io/badge/PayPal-00457C?style=flat-square&logo=paypal&logoColor=white)](https://www.paypal.com/donate/?hosted_button_id=WMPGGC32C7U7U)

@@ -4,16 +4,6 @@ local MINOR = tonumber(("$Revision: 16 $"):match("%d+"));
 local lib, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 if not lib then return end -- No Upgrade needed.
 
--- On Warmane UnitGUID("player" can be nil;
-local old_UnitGUID = UnitGUID
-function UnitGUID(unit)
-	local guid = old_UnitGUID(unit)
-	if not guid and (unit == "player" or unit == "0x0") then
-		return "0x0";
-	end
-	return guid;
-end;
-
 local CallbackHandler = LibStub:GetLibrary("CallbackHandler-1.0");
 
 local GetInventoryItemLink = _G.GetInventoryItemLink;
@@ -23,7 +13,7 @@ local GetMacroInfo = _G.GetMacroInfo;
 local GetActionInfo = _G.GetActionInfo;
 local substr = _G.string.sub;
 local wipe = _G.wipe;
-local playerGUID = UnitGUID("player");
+local playerGUID = UnitGUID("player") or "";
 local GetTime = _G.GetTime;
 
 lib.spellToItem = lib.spellToItem or {};
